@@ -3,16 +3,17 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="Learning CSS.css">
     <title>regEx</title>
 </head>
 <body>
     
     <style>
-        body{background-image:radial-gradient(#4d8bff 50%, #10254d 90%)}
+        body{
+            background-image: linear-gradient(0deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 27%, rgba(222,249,255,1) 100%);
+            font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        }
         
         input{
-            display: block;
             margin: 15px auto;
             padding: 4px;
             font-size: 1em;
@@ -24,9 +25,14 @@
             outline: none;
         }
 
+        input[name="gender"], label[for="gender"],
+        label[for="option1"], label[for="option2"], label[for="option3"]{
+            width: auto;
+            padding-right: 8px;
+        }
+
         input + p{
             font-size: 0.9em;
-            font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
             text-align: center;
             margin: 0 10px;
             opacity: 0;
@@ -64,21 +70,86 @@
             border-color: crimson;
         }
 
+        #sub-button{
+            width: 30%;
+            border-radius: 0;
+            padding: 5px;
+            cursor: not-allowed;
+        }
+
+    /*popup submit */
+                
+        .popup-button{
+            display: flex;
+            margin: 20px auto;
+            background-color: crimson;
+            color: white;
+            padding: 6px 10px;
+            cursor: pointer;
+        }
+
+        .popup-wrapper{
+            background-color: rgba(0,0,0,.5);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        .popup{
+            text-align: center;
+            width: 100%;
+            max-width: 300px;
+            margin: 10% auto;
+            padding: 20px;
+            background: white;
+            position: relative;
+        }
+
+        .popup a{
+            display: inline-block;
+            background: crimson;
+            color: white;
+            text-decoration: none;
+            margin-top: 7px;
+            padding: 3px 7px;
+        }
+
+        .popup-close{
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            cursor: pointer;
+        }
+
+
     </style>
 
     <form class="regex" autocomplete="off">
         <h1 id="title"> New User Signup </h1>
-        <input type="text" name="username" placeholder="Username">
+        <input type="text" name="username" placeholder="Username" required>
         <p>Username must be alphanumeric and contain at least 7 characters</p>
-        <input type="text" name="email" placeholder="E-mail">
+        <input type="text" name="email" placeholder="E-mail" required>
         <p>Email must be a valid address, i.e. heloyolo@parappa.com</p>
-        <input type="password" name="password" placeholder="Password">
+        <input type="password" name="password" placeholder="Password" required>
         <p>Password must be alphanumeric and contain 8-12 characters (@, - and _ symbols are allowed)</p>
-        <input type="text" name="mobile" placeholder="Mobile number">
+        <input type="text" name="mobile" placeholder="Mobile number" required>
         <p>Mobile number must be of 10 digits</p>
-        <input type="text" name="slug" placeholder="Slug profile">
-        <p>Slug must contain only lowercase letters, numbers and hypens and be 8-20 characters </p>
-        <input type="submit" value="Submit right now!">
+
+        <label for="gender">You define yourself as:</label>
+        <input type="radio" name="gender" value="male" id="option1" required>
+        <label for="option1">Male</label>
+        <input type="radio" name="gender" value="female" id="option2">
+        <label for="option2">Female</label>
+        <input type="radio" name="gender" value="other" id="option3">
+        <label for="option3">Other</label>
+        <input type="date" name="birthday" placeholder="birthday" required>
+
+        <input type="submit" value="Submit right now!" id="sub-button" disabled>
+
+        
     </form>
 
     <div class="popup-wrapper">
@@ -87,28 +158,30 @@
           <div class="popup-content">
             <h2> Congrats! </h2>
             <p> You signed up with success! </p>
-            <a href="#">さようなら!</a>
+            <a href="">さようなら!</a>
           </div>
         </div>
     </div>
     
     <script>
+
         const form = document.querySelector('form.regex');
         const inputs = document.querySelectorAll('form.regex > input');
         console.log(inputs);
         const p = document.querySelectorAll('form.regex > p');
+        const submit = document.getElementById('sub-button');
 
         const wrapper = document.querySelector(".popup-wrapper");
         const cross = document.querySelector(".popup-close");
 
+        /*creazione regex + validazione*/
 
         let patterns = {
             username: /^[a-z\d\s]{7,}$/i,
             email: /^([a-z\d.-]+)@([a-z\d-]+)\.([a-z]{2,6})(\.[a-z]{2,4})?$/m,
             password: /^[\w@-]{8,12}$/,
-            mobile: /^\d{10}$/,
-            slug: /^[a-z\d.-]{8,20}$/m
-        }
+            mobile: /^\d{10}$/       
+            }
 
         function validate(field, regex){
             if(regex.test(field.value)){ /*si controlla se il valore della stringa testata corrisponde al pattern regex, ritorna bool*/
@@ -122,6 +195,31 @@
               validate(e.target, patterns[e.target.attributes.name.value]);
             }));
             
+
+        /* abilitazione submit quando form è corretto e completo */
+        
+        const arrayInputs = Array.from(inputs);
+        const filteredInputs = arrayInputs.filter(field => (field.type == "text" || field.type == "password"));
+
+        document.addEventListener('keyup', () => {
+        const subValidation = filteredInputs.reduce((acc, field) => {
+            if(field.classList.contains('valid')){
+                acc++;
+            } return acc;
+        }, 0);
+        console.log(subValidation);
+        if(subValidation == filteredInputs.length){
+            submit.disabled = false;
+            submit.style.cursor = "pointer";
+        } else {
+            submit.disabled = true;
+            submit.style.cursor = "not-allowed";
+
+        }
+    })
+        
+        /*apri e chiudi popup*/
+
         function openPopup(e){
                 e.preventDefault();
                 wrapper.style.display = "block";
@@ -135,6 +233,7 @@
         
             form.addEventListener('submit', openPopup);
             cross.addEventListener('click', closePopup);
+            
 
     </script>
 
